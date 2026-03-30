@@ -32,8 +32,8 @@ func (db DBConfig) DSN() string {
 }
 
 type GRPCApp struct {
-	Port    string `env:"ADDRESS" env-default:"localhost:44044"`
-	Timeout int64  `env:"TIMEOUT" env-default:"4000000000"`
+	Port    int64 `env:"PORT" env-default:"localhost:44044"`
+	Timeout int64 `env:"TIMEOUT" env-default:"4000000000"`
 }
 
 func (g GRPCApp) AsDuration() time.Duration {
@@ -54,7 +54,7 @@ func MustLoad() *Config {
 		slog.Error("database configuration is incomplete")
 	}
 
-	slog.Info(fmt.Sprintf("config loaded: env=%s, db=%s, http=%s",
+	slog.Info(fmt.Sprintf("config loaded: env=%s, db=%s, port=%d",
 		cfg.Env, cfg.DB.Host, cfg.GRPCApp.Port))
 
 	return &cfg
