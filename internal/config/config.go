@@ -10,9 +10,10 @@ import (
 )
 
 type Config struct {
-	Env     string   `env:"APP_ENV" env-default:"local" env-required:"true"`
-	DB      DBConfig `env-prefix:"DB_"`
-	GRPCApp GRPCApp  `env-prefix:"APP_"`
+	Env      string        `env:"APP_ENV" env-default:"local" env-required:"true"`
+	DB       DBConfig      `env-prefix:"DB_"`
+	GRPCApp  GRPCApp       `env-prefix:"APP_"`
+	TokenTTL time.Duration `env-prefix:"JWT_" env-default:"1h"`
 }
 
 type DBConfig struct {

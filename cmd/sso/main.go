@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/voznikaetnepriyazn/Autorization_service/internal/app"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/config"
 )
 
@@ -23,6 +24,10 @@ func main() {
 		slog.Any("cfg", cfg),
 		slog.Int("port", int(cfg.GRPCApp.Port)),
 	)
+
+	application := app.InitApp(log, int(cfg.GRPCApp.Port), cfg.TokenTTL)
+
+	application.GRPCSrv.MustRun()
 }
 
 func setupLogger(env string) *slog.Logger {
