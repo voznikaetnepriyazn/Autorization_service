@@ -10,6 +10,7 @@ import (
 
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/app"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/config"
+	"github.com/voznikaetnepriyazn/Autorization_service/internal/grpc/auth"
 )
 
 const (
@@ -29,7 +30,9 @@ func main() {
 		slog.Int("port", int(cfg.GRPCApp.Port)),
 	)
 
-	application := app.InitApp(log, int(cfg.GRPCApp.Port), cfg.TokenTTL)
+	var authService auth.Auth
+
+	application := app.InitApp(log, authService, int(cfg.GRPCApp.Port), cfg.TokenTTL)
 
 	go application.GRPCSrv.MustRun()
 
