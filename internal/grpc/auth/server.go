@@ -54,7 +54,24 @@ func (s *serverAPI) Login(ctx context.Context, req *Autorization_servise.LoginRe
 }
 
 func (s *serverAPI) RegisterUser(ctx context.Context, req *Autorization_servise.RegisterRequest) (*Autorization_servise.RegisterResponse, error) {
-	panic("implement me")
+	//переделать с пакетом и в мидлвейр валидацию
+	if req.GetEmail() == "" {
+		return nil, status.Error(codes.InvalidArgument, "email is requred")
+	}
+
+	if req.GetPassword() == "" {
+		return nil, status.Error(codes.InvalidArgument, "password is requred")
+	}
+
+	userID, err := s.auth.RegisterNewUser(ctx, req.GetEmail(), req.GetPassword())
+	if err != nil {
+		//todo - user exist
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &Autorization_servise.RegisterResponse{
+		UserId: userID,
+	}, nil
 }
 
 func (s *serverAPI) IsAdmin(ctx context.Context, req *Autorization_servise.IsAdminRequest) (*Autorization_servise.IsAdminResponse, error) {
