@@ -75,5 +75,16 @@ func (s *serverAPI) RegisterUser(ctx context.Context, req *Autorization_servise.
 }
 
 func (s *serverAPI) IsAdmin(ctx context.Context, req *Autorization_servise.IsAdminRequest) (*Autorization_servise.IsAdminResponse, error) {
-	panic("implement me")
+	if req.GetUserId() == emptyValue {
+		return nil, status.Error(codes.InvalidArgument, "user_id is requred")
+	}
+
+	isAdmin, err := s.auth.isAdmin(ctx, req.GetUserId())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &Autorization_servise.IsAdminResponse{
+		IsAdmin: isAdmin,
+	}, nil
 }
