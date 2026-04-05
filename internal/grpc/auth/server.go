@@ -70,16 +70,21 @@ func (s *serverAPI) RegisterUser(ctx context.Context, req *Autorization_servise.
 	}
 
 	return &Autorization_servise.RegisterResponse{
-		UserId: userID,
+		UserId: userID[:],
 	}, nil
 }
 
 func (s *serverAPI) IsAdmin(ctx context.Context, req *Autorization_servise.IsAdminRequest) (*Autorization_servise.IsAdminResponse, error) {
-	if req.GetUserId() == emptyValue {
+	if len(req.GetUserId()) == emptyValue {
 		return nil, status.Error(codes.InvalidArgument, "user_id is requred")
 	}
 
-	isAdmin, err := s.auth.isAdmin(ctx, req.GetUserId())
+	userId, err := uuid.ParseBytes(req.GetUserId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "failed to parse user id")
+	}
+
+	isAdmin, err := s.auth.isAdmin(ctx, userId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "internal error")
 	}
