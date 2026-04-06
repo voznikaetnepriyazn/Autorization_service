@@ -4,11 +4,14 @@ package auth2
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/domain/models"
+	"github.com/voznikaetnepriyazn/Autorization_service/internal/lib/sl"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
@@ -56,7 +59,29 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID u
 // RegisterNewUser registers new user in the system and returns user ID.
 // if user with given username already exist, return error.
 func (a *Auth) RegisterNewUser(ctx context.Context, email string, password string) (uuid.UUID, error) {
-	panic("not implemented")
+	const op = "auth.RegisterNewuser"
+
+	log := a.log.With(
+		slog.String("operation", op),
+	)
+
+	log.Info("registering user")
+
+	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost) //hash with salt
+	if err != nil {
+		log.Error("failed to generate password hash", sl.Err(err))
+
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := a.userSaver.SaveUser(ctx, email, passHash)
+	if err != nil {
+		log.Error("failed to save user", sl.Err(err))
+	}
+
+	log.Info("user registered")
+
+	return id, nil
 }
 
 // IsAdmin checks if user is admin.
