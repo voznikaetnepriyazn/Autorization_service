@@ -15,8 +15,8 @@ const (
 )
 
 type Auth interface {
-	Login(ctx context.Context, email string, password string, appID int) (token string, err error)
-	RegisterNewUser(ctx context.Context, email string, password string) (userID uuid.UUID, eer error)
+	Login(ctx context.Context, email string, password string, appID uuid.UUID) (token string, err error)
+	RegisterNewUser(ctx context.Context, email string, password string) (userID uuid.UUID, err error)
 	isAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
 }
 
@@ -39,11 +39,16 @@ func (s *serverAPI) Login(ctx context.Context, req *Autorization_servise.LoginRe
 		return nil, status.Error(codes.InvalidArgument, "password is requred")
 	}
 
-	if req.GetAppId() == emptyValue {
+	if req.GetAppId() == nil {
 		return nil, status.Error(codes.InvalidArgument, "app_id is requred")
 	}
 
-	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), int(req.GetAppId()))
+	appId, err := uuid.ParseBytes(req.GetAppId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "failed to parse app id")
+	}
+
+	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), appId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "internal error")
 	}

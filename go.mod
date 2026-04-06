@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260405194153-9221d49eae6c // indirect
+	github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260406152011-626bc7bb4e51 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
