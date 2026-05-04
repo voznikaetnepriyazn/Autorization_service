@@ -41,8 +41,14 @@ func (db DBConfig) DSNURL() string {
 }
 
 type GRPCApp struct {
-	Port    int64 `env:"PORT" env-default:"localhost:44044"`
-	Timeout int64 `env:"TIMEOUT" env-default:"4s"`
+	Port    int64         `env:"PORT" env-default:"localhost:44044"`
+	Timeout time.Duration `env:"TIMEOUT" env-default:"4s"`
+}
+
+type JWTConfig struct {
+	Secret     string        `env:"SECRET" env-required:"true"`
+	TokenTTL   time.Duration `env:"TOKEN_TTL" env-default:"1h"`
+	RefreshTTL time.Duration `env:"REFRESH_TTL" env-default:"720h"`
 }
 
 func (g GRPCApp) AsDuration() time.Duration {

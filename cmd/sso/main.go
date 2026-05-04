@@ -3,6 +3,7 @@ package main
 //todo interseptor - like middleware, graceful shutdown for db ping
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -29,8 +30,11 @@ func init() {
 }
 
 func main() {
-	log.Printf("APP_ENV=%s", os.Getenv("APP_ENV"))
-	log.Printf("DB_NAME=%s", os.Getenv("DB_NAME"))
+	fmt.Println("=== ENV DIAGNOSTICS ===")
+	fmt.Printf("APP_ENV=[%s]\n", os.Getenv("APP_ENV"))
+	fmt.Printf("DB_HOST=[%s]\n", os.Getenv("DB_HOST"))
+	fmt.Printf("DB_NAME=[%s]\n", os.Getenv("DB_NAME"))
+	fmt.Printf("JWT_SECRET len=[%d]\n", len(os.Getenv("JWT_SECRET")))
 
 	cfg := config.MustLoad()
 
