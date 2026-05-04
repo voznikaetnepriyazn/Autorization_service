@@ -3,10 +3,13 @@ package main
 //todo interseptor - like middleware, graceful shutdown for db ping
 
 import (
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/joho/godotenv"
 
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/app"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/config"
@@ -19,7 +22,16 @@ const (
 	envProd  = "prod"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Printf("no .env file found, using system env vars: %v", err)
+	}
+}
+
 func main() {
+	log.Printf("APP_ENV=%s", os.Getenv("APP_ENV"))
+	log.Printf("DB_NAME=%s", os.Getenv("DB_NAME"))
+
 	cfg := config.MustLoad()
 
 	log := setupLogger(cfg.Env)
