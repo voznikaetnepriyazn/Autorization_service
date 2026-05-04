@@ -37,7 +37,9 @@ func (a *App) Run() error {
 
 	log := a.log.With(slog.String("operation", op), slog.Int("port", a.port))
 
-	l, err := net.Listen("tcp", fmt.Sprintf("%d", a.port))
+	addr := fmt.Sprintf(":%d", a.port)
+
+	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

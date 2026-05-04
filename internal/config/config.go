@@ -14,7 +14,7 @@ type Config struct {
 	Env      string        `env:"APP_ENV" env-default:"local" env-required:"true"`
 	DB       DBConfig      `env-prefix:"DB_"`
 	GRPCApp  GRPCApp       `env-prefix:"APP_"`
-	TokenTTL time.Duration `env-prefix:"JWT_" env-default:"1h"`
+	TokenTTL time.Duration `env:"JWT_TOKEN_TTL" env-default:"1h"`
 }
 
 type DBConfig struct {
@@ -41,8 +41,8 @@ func (db DBConfig) DSNURL() string {
 }
 
 type GRPCApp struct {
-	Port    int64         `env:"PORT" env-default:"localhost:44044"`
-	Timeout time.Duration `env:"TIMEOUT" env-default:"4s"`
+	Port    int64         `env:"GRPC_PORT" env-default:"44044"`
+	Timeout time.Duration `env:"GRPC_TIMEOUT" env-default:"4s"`
 }
 
 type JWTConfig struct {
@@ -59,15 +59,17 @@ func MustLoad() *Config {
 	var cfg Config
 
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
-		slog.Error("failed to load config from env")
+		slog.Error("failed to load config from env", "error", err.Error())
 		os.Exit(1)
 	}
 
 	if cfg.Env == "" {
 		slog.Error("APP_ENV cannot be empty")
+		os.Exit(1)
 	}
 	if cfg.DB.DSN() == "" {
 		slog.Error("database configuration is incomplete")
+		os.Exit(1)
 	}
 
 	slog.Info(fmt.Sprintf("config loaded: env=%s, db=%s, port=%d",
