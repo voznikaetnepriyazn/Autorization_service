@@ -37,9 +37,11 @@ func main() {
 		panic("migrations-path is requred")
 	}
 
+	dsnWithTable := appendDSNParam(storagePath, "x-migrations-table", migrationsTable)
+
 	m, err := migrate.New(
 		"file://"+migrationsPath,
-		appendDSNParam(dsn, "x-migrations-table", migrationsTable),
+		dsnWithTable,
 	)
 	if err != nil {
 		panic(err)

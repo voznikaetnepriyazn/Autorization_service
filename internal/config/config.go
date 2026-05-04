@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -32,9 +33,16 @@ func (db DBConfig) DSN() string {
 	)
 }
 
+func (db DBConfig) DSNURL() string {
+	return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s?sslmode=%s",
+		db.User, db.Password, db.Host, db.Port, db.Name, db.SSLMode,
+	)
+}
+
 type GRPCApp struct {
 	Port    int64 `env:"PORT" env-default:"localhost:44044"`
-	Timeout int64 `env:"TIMEOUT" env-default:"4000000000"`
+	Timeout int64 `env:"TIMEOUT" env-default:"4s"`
 }
 
 func (g GRPCApp) AsDuration() time.Duration {
@@ -46,6 +54,7 @@ func MustLoad() *Config {
 
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		slog.Error("failed to load config from env")
+		os.Exit(1)
 	}
 
 	if cfg.Env == "" {
