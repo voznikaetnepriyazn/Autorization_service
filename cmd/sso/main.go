@@ -14,7 +14,10 @@ import (
 
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/app"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/config"
-	"github.com/voznikaetnepriyazn/Autorization_service/internal/grpc/auth"
+
+	//"github.com/voznikaetnepriyazn/Autorization_service/internal/grpc/auth"
+	auth2 "github.com/voznikaetnepriyazn/Autorization_service/internal/services/auth"
+	"github.com/voznikaetnepriyazn/Autorization_service/internal/storage/postgresql"
 )
 
 const (
@@ -46,7 +49,21 @@ func main() {
 		slog.Int("port", int(cfg.GRPCApp.Port)),
 	)
 
-	var authService auth.Auth
+	// Инициализация PostgreSQL-хранилища
+	storage, err := postgresql.New(cfg.DB.DSN())
+	if err != nil {
+		log.Error("failed to init storage", "error", err)
+		os.Exit(1)
+	}
+
+	// Инициализация сервиса аутентификации
+	authService := auth2.InitAuth(
+		log,
+		storage, // UserSaver
+		storage, // UserProvider
+		storage, // AppProvider
+		cfg.TokenTTL,
+	)
 
 	application := app.InitApp(log, authService, int(cfg.GRPCApp.Port), cfg.TokenTTL)
 

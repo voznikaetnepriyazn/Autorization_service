@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"time"
 
+	//"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/domain/models"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/lib/jwt"
@@ -34,6 +35,7 @@ type UserSaver interface {
 type UserProvider interface {
 	User(ctx context.Context, email string) (models.User, error)
 	IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
+	GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, error) // Добавляем метод для получения пользователя по ID
 }
 
 type AppProvider interface {
@@ -57,11 +59,11 @@ func InitAuth(log *slog.Logger, userSaver UserSaver, userProvider UserProvider, 
 	}
 }
 
-// Login cheks if user with given credentials exists in the system
+// Login checs if user with given credentials exists in the system
 //
 // If user exists, but password is incorrect, returns error.
 // if user doesn't exist, return error.
-func (a *Auth) Login(ctx context.Context, email string, password string, appID uuid.UUID) (string, error) {
+func (a *Auth) Login(ctx context.Context, email string, password string, appID int32) (string, error) {
 	const op = "auth.Login"
 
 	log := a.log.With(
@@ -93,7 +95,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID u
 		return "", fmt.Errorf("%s; %w", op, err)
 	}
 
-	log.Info("user logged in cuccessfully")
+	log.Info("user logged in successfully")
 
 	token, err := jwt.NewToken(user, app, a.tokenTTL)
 	if err != nil {
