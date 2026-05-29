@@ -1,9 +1,9 @@
 package models
 
-import "github.com/google/uuid"
+//import "github.com/google/uuid"
 
 type App struct {
-	Id     uuid.UUID
+	Id     int32
 	Name   string
 	Secret string
 }

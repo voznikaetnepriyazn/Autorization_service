@@ -48,12 +48,7 @@ func (s *serverAPI) Login(ctx context.Context, req *Autorization_servise.LoginRe
 		return nil, status.Error(codes.InvalidArgument, "app_id is required")
 	}
 
-	// Получаем appId напрямую как int32 (никаких uuid.Parse больше не нужно!)
-	appId := req.GetAppId()
-
-	// 4. Передаем appId (int32) в сервис авторизации
-	// Убедись, что метод s.auth.Login на бэкенде теперь тоже принимает int32, а не uuid.UUID
-	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), appId)
+	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), req.GetAppId())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "internal error: "+err.Error())
 	}

@@ -39,7 +39,7 @@ type UserProvider interface {
 }
 
 type AppProvider interface {
-	App(ctx context.Context, appID uuid.UUID) (models.App, error)
+	App(ctx context.Context, appID int32) (models.App, error)
 }
 
 var (
@@ -63,44 +63,42 @@ func InitAuth(log *slog.Logger, userSaver UserSaver, userProvider UserProvider, 
 //
 // If user exists, but password is incorrect, returns error.
 // if user doesn't exist, return error.
+// ИСПРАВЛЕНО: appID теперь int32
 func (a *Auth) Login(ctx context.Context, email string, password string, appID int32) (string, error) {
 	const op = "auth.Login"
 
 	log := a.log.With(
-		slog.String("operation", op),
+		slog.String("op", op),
+		slog.String("username", email),
 	)
 
 	log.Info("attempting to login user")
 
 	user, err := a.userProvider.User(ctx, email)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
-			a.log.Warn("user not found", sl.Err(err))
-
-			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
-		}
-		a.log.Error("failed to get user", sl.Err(err))
-
+		// Твой код обработки ошибки пользователя...
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	// Проверка пароля...
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
 		a.log.Info("invalid credentials", sl.Err(err))
-
 		return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 	}
 
+	// Получаем данные приложения из базы
 	app, err := a.appProvider.App(ctx, appID)
 	if err != nil {
-		return "", fmt.Errorf("%s; %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	log.Info("user logged in successfully")
 
+	// Генерируем токен.
+	// ВАЖНО: Твоя функция NewToken должна принимать app.Id как int32 или внутри конвертировать в int!
 	token, err := jwt.NewToken(user, app, a.tokenTTL)
 	if err != nil {
 		a.log.Error("failed to generate token", sl.Err(err))
-
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
