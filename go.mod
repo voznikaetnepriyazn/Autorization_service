@@ -9,7 +9,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
-	github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260406152011-626bc7bb4e51
+	github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260529163606-80c9c7e2a342
 	golang.org/x/crypto v0.49.0
 	google.golang.org/grpc v1.79.3
 )

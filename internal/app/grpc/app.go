@@ -17,7 +17,7 @@ type App struct {
 
 func InitApp(log *slog.Logger, authService auth.Auth, port int) *App {
 	gRPCServer := grpc.NewServer()
-	auth.Register(gRPCServer, authService)
+	auth.Register(gRPCServer, authService, "your-jwt-secret")
 
 	return &App{
 		log:        log,

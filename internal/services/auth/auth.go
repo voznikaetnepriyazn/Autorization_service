@@ -7,12 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
-	//"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/domain/models"
-	"github.com/voznikaetnepriyazn/Autorization_service/internal/lib/jwt"
+	jwtt "github.com/voznikaetnepriyazn/Autorization_service/internal/lib/jwt"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/lib/sl"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/storage"
 	"golang.org/x/crypto/bcrypt"
@@ -63,7 +64,6 @@ func InitAuth(log *slog.Logger, userSaver UserSaver, userProvider UserProvider, 
 //
 // If user exists, but password is incorrect, returns error.
 // if user doesn't exist, return error.
-// ИСПРАВЛЕНО: appID теперь int32
 func (a *Auth) Login(ctx context.Context, email string, password string, appID int32) (string, error) {
 	const op = "auth.Login"
 
@@ -96,7 +96,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 
 	// Генерируем токен.
 	// ВАЖНО: Твоя функция NewToken должна принимать app.Id как int32 или внутри конвертировать в int!
-	token, err := jwt.NewToken(user, app, a.tokenTTL)
+	token, err := jwtt.NewToken(user, app, a.tokenTTL)
 	if err != nil {
 		a.log.Error("failed to generate token", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -166,4 +166,45 @@ func (a *Auth) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	log.Info("checked if user is admin", slog.Bool("is admin", adm))
 
 	return adm, nil
+}
+
+func (a *Auth) ValidateToken(tokenString string, secret string) (uuid.UUID, error) {
+	const op = "auth.ValidateToken"
+
+	if strings.HasPrefix(strings.ToLower(tokenString), "bearer ") {
+		tokenString = tokenString[7:]
+	}
+
+	// 2. Очищаем от случайных пробелов, переносов строк или лишних кавычек
+	tokenString = strings.TrimSpace(tokenString)
+	tokenString = strings.Trim(tokenString, "\"") // Убирает лишние кавычки, если фронт передал JSON-строку
+
+	// 3. ДЕБАГ ЛОГ В GO
+	segments := strings.Split(tokenString, ".")
+	fmt.Printf("[Go Debug] Метод вызвался. Сегментов в JWT: %d, Длина строки: %d\n", len(segments), len(tokenString))
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte("your-secret-key"), nil
+	})
+	if err != nil || !token.Valid {
+		return uuid.Nil, fmt.Errorf("%s: invalid token: %w", op, err)
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return uuid.Nil, fmt.Errorf("%s: invalid token claims", op)
+	}
+
+	uidStr, ok := claims["uid"].(string)
+	if !ok {
+		return uuid.Nil, fmt.Errorf("%s: uid not found or not a string", op)
+	}
+
+	// Конвертируем строку из JWT обратно в тип uuid.UUID
+	parsedUUID, err := uuid.Parse(uidStr)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("%s: invalid uuid format in token: %w", op, err)
+	}
+
+	return parsedUUID, nil
 }

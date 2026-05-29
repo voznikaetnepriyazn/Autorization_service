@@ -67,8 +67,10 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260406152011-626bc7bb4e51 h1:Z+pAUBp+L2qWf6Wy9XTd3CjJiDRf1RL8BpemZsnl178=
-github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260406152011-626bc7bb4e51/go.mod h1:dNh6jaotMeU/TLAbuQQ0l+s0xsWTzdqCm/rWzLZSDDw=
+github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260529155446-7793920e5c99 h1:kPZ1xNIlzax8ckyXoDia38/B+URxYSQ+px950d1fdv0=
+github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260529155446-7793920e5c99/go.mod h1:dNh6jaotMeU/TLAbuQQ0l+s0xsWTzdqCm/rWzLZSDDw=
+github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260529163606-80c9c7e2a342 h1:qOEtP0MmLM4+Dzk+bfvJzM0pdd2aa+OEGPMNmhaZ/eI=
+github.com/voznikaetnepriyazn/Autorization-proto v0.0.0-20260529163606-80c9c7e2a342/go.mod h1:dNh6jaotMeU/TLAbuQQ0l+s0xsWTzdqCm/rWzLZSDDw=
 go.opentelemetry.io/auto/sdk v1.2.1 h1:jXsnJ4Lmnqd11kwkBV2LgLoFMZKizbCi5fNZ/ipaZ64=
 go.opentelemetry.io/auto/sdk v1.2.1/go.mod h1:KRTj+aOaElaLi+wW1kO/DZRXwkF4C5xPbEe3ZiIhN7Y=
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 h1:F7Jx+6hwnZ41NSFTO5q4LYDtJRXBf2PD0rNBkeB/lus=

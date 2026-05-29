@@ -1,6 +1,7 @@
-package jwt
+package jwtt
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,17 +11,18 @@ import (
 )
 
 func NewToken(user models.User, app models.App, duration time.Duration) (string, error) {
-	token := jwt.New(jwt.SigningMethodES256)
+	// 1. ИСПРАВЛЕНО: Меняем ES256 на HS256, чтобы подписывать обычной строкой (app.Secret)
+	token := jwt.New(jwt.SigningMethodHS256)
 
-	claims := token.Claims.(jwt.MapClaims) //token convert to map
-	claims["uid"] = user.Id
+	claims := token.Claims.(jwt.MapClaims)
+	claims["uid"] = user.Id.String() // Убедись, что Id переводится в строку, так как uuid.UUID в JSON может сериализоваться криво
 	claims["email"] = user.Email
 	claims["exp"] = time.Now().Add(duration).Unix()
 	claims["app_id"] = app.Id
 
-	tokenString, err := token.SignedString([]byte(app.Secret)) //secret must not move to logs
+	tokenString, err := token.SignedString([]byte(app.Secret))
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return tokenString, nil
@@ -28,6 +30,10 @@ func NewToken(user models.User, app models.App, duration time.Duration) (string,
 
 // ValidateToken принимает токен и секретное слово приложения, возвращает UUID пользователя и ошибку
 func ValidateToken(tokenString string, secret string) (uuid.UUID, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return uuid.Nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
