@@ -7,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
+
+	//"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	//"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/voznikaetnepriyazn/Autorization_service/internal/domain/models"
 	jwtt "github.com/voznikaetnepriyazn/Autorization_service/internal/lib/jwt"
@@ -25,6 +26,7 @@ type Auth struct {
 	userProvider UserProvider
 	appProvider  AppProvider
 	tokenTTL     time.Duration
+	jwtSecret    string
 }
 
 type UserSaver interface {
@@ -94,14 +96,11 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 
 	log.Info("user logged in successfully")
 
-	// Генерируем токен.
-	// ВАЖНО: Твоя функция NewToken должна принимать app.Id как int32 или внутри конвертировать в int!
-	token, err := jwtt.NewToken(user, app, a.tokenTTL)
+	token, err := jwtt.NewToken(user, app, a.tokenTTL, a.jwtSecret)
 	if err != nil {
 		a.log.Error("failed to generate token", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-
 	return token, nil
 }
 
@@ -168,43 +167,21 @@ func (a *Auth) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	return adm, nil
 }
 
-func (a *Auth) ValidateToken(tokenString string, secret string) (uuid.UUID, error) {
+func (a *Auth) ValidateToken(ctx context.Context, tokenString string) (uuid.UUID, error) {
 	const op = "auth.ValidateToken"
 
-	if strings.HasPrefix(strings.ToLower(tokenString), "bearer ") {
-		tokenString = tokenString[7:]
-	}
+	log := a.log.With(
+		slog.String("op", op),
+	)
+	log.Info("validating token")
 
-	// 2. Очищаем от случайных пробелов, переносов строк или лишних кавычек
-	tokenString = strings.TrimSpace(tokenString)
-	tokenString = strings.Trim(tokenString, "\"") // Убирает лишние кавычки, если фронт передал JSON-строку
-
-	// 3. ДЕБАГ ЛОГ В GO
-	segments := strings.Split(tokenString, ".")
-	fmt.Printf("[Go Debug] Метод вызвался. Сегментов в JWT: %d, Длина строки: %d\n", len(segments), len(tokenString))
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte("your-secret-key"), nil
-	})
-	if err != nil || !token.Valid {
-		return uuid.Nil, fmt.Errorf("%s: invalid token: %w", op, err)
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return uuid.Nil, fmt.Errorf("%s: invalid token claims", op)
-	}
-
-	uidStr, ok := claims["uid"].(string)
-	if !ok {
-		return uuid.Nil, fmt.Errorf("%s: uid not found or not a string", op)
-	}
-
-	// Конвертируем строку из JWT обратно в тип uuid.UUID
-	parsedUUID, err := uuid.Parse(uidStr)
+	// Просто вызываем хелпер, передавая ему секрет, лежащий в самом сервисе
+	uid, err := jwtt.ValidateToken(tokenString, a.jwtSecret)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s: invalid uuid format in token: %w", op, err)
+		log.Error("token validation failed", sl.Err(err))
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return parsedUUID, nil
+	log.Info("token is valid", slog.String("uid", uid.String()))
+	return uid, nil
 }

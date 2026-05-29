@@ -21,7 +21,7 @@ type Auth interface {
 	Login(ctx context.Context, email string, password string, appID int32) (token string, err error)
 	RegisterNewUser(ctx context.Context, email string, password string) (userID uuid.UUID, err error)
 	IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
-	ValidateToken(tokenString string, secret string) (userID uuid.UUID, err error)
+	ValidateToken(ctx context.Context, tokenString string) (userID uuid.UUID, err error)
 }
 
 type serverAPI struct {
@@ -114,24 +114,24 @@ func (s *serverAPI) IsAdmin(ctx context.Context, req *Autorization_servise.IsAdm
 	}, nil
 }
 
-func (s *serverAPI) ValidateToken(
-	ctx context.Context,
+func (s *serverAPI) ValidateToken(ctx context.Context,
 	req *Autorization_servise.ValidateTokenRequest,
 ) (*Autorization_servise.ValidateTokenResponse, error) {
+
+	// 1. Валидация входных данных
 	if req.GetToken() == "" {
 		return nil, status.Error(codes.InvalidArgument, "token is required")
 	}
 
-	userUUID, err := s.auth.ValidateToken(req.GetToken(), s.jwtSecret)
+	// 2. Вызов сервиса (теперь передаем только токен)
+	userUUID, err := s.auth.ValidateToken(ctx, req.GetToken())
 	if err != nil {
-		// ВАЖНО: Выводим настоящую ошибку в консоль Go бэкенда!
-		fmt.Printf("[gRPC Debug] Ошибка валидации токена: %v\n", err)
-
-		// Для фронтенда пока оставляем ошибку, но можем временно пробросить детали
-		return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("invalid token: %v", err))
+		// Если токен протух или подпись кривая, возвращаем стандартную ошибку gRPC Unauthenticated
+		return nil, status.Error(codes.Unauthenticated, "invalid or expired token")
 	}
 
+	// 3. Формируем успешный ответ для фронтенда
 	return &Autorization_servise.ValidateTokenResponse{
-		UserId: userUUID.String(),
+		UserId: userUUID.String(), // Возвращаем UUID пользователя текстом
 	}, nil
 }
